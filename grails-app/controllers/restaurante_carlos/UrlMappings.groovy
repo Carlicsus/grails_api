@@ -3,12 +3,26 @@ package restaurante_carlos
 class UrlMappings {
 
     static mappings = {
-        delete "/$controller/$id(.$format)?"(action:"delete")
-        get "/$controller(.$format)?"(action:"index")
-        get "/$controller/$id(.$format)?"(action:"show")
-        post "/$controller(.$format)?"(action:"save")
-        put "/$controller/$id(.$format)?"(action:"update")
-        patch "/$controller/$id(.$format)?"(action:"patch")
+        group "/menu", {
+            group "/tipo", {
+                post "/nuevo"(controller: "menu", action: "nuevoTipo")
+                get "/lista"(controller: "menu", action: "listaTipos")
+                get "/ver"(controller: "menu", action: "paginarTipos")
+                group "/$uuid", {
+                    get "/informacion"(controller: "menu", action: "informacionTipo")
+                    patch "/editar"(controller: "menu", action: "editarTipo")
+                    patch "/activar"(controller: "menu", action: "editarEstatusTipo"){
+                        estatus = 1
+                    }
+                    patch "/desactivar"(controller: "menu", action: "editarEstatusTipo") {
+                        estatus = 0
+                    }
+                    delete "/eliminar"(controller: "menu", action: "editarEstatusTipo") {
+                        estatus = 2
+                    }
+                }
+            }
+        }
 
         "/"(controller: 'application', action:'index')
         "500"(view: '/error')
