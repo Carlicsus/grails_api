@@ -54,13 +54,16 @@ class PlatilloService {
         try{
             def tipoPrincipal
             tipoPrincipal = TipoMenu.findByUuid(menuTipo)
+
+            def estado = (fechaDisponible != null) ? 0 : 1
             
             def nuevo = new Platillo([
                 nombre:nombre, 
-                tipoMenu: tipoPrincipal, 
+                tipoMenu: tipoPrincipal,
                 fechaDisponible: fechaDisponible, 
                 costo:costo, descripcion:descripcion, 
-                platillosDisponibles:platillosDisponibles
+                platillosDisponibles:platillosDisponibles,
+                status: estado
             ]).save(flush:true, failOnError:true)
             return [
                 resp: [ success: true, data: nuevo.uuid ],
@@ -161,6 +164,51 @@ class PlatilloService {
             platillo.save()
             return [
                 resp: [success:true],
+                status: 200
+            ]
+        }catch(e){
+            return [
+                resp: [ success: false, mensaje: e.getMessage() ],
+                status: 500
+            ]
+        }
+    }
+
+    def paginarPlatillos( pagina, columnaOrden, orden, max, estatus, query ){
+        try{
+            println "Desde el servicio"
+            def offset = pagina * max - max
+            def list = Platillo.createCriteria().list{
+                if( estatus ) {
+                    eq("status", estatus)
+                }
+                ne("status", 2)
+                if( query ) {
+                    or {
+                        like("nombre", "%${query}%")
+                        like("descripcion", "%${query}%")
+                    }
+                }
+                firstResult(offset)
+                maxResults(max)
+                order( columnaOrden, orden )
+            }.collect{platillo -> 
+                def subMenu = TipoMenu.findById(platillo.tipoMenu.id)
+                // def menu = TipoMenu.findById(submenu.tipoPrincipal.id)
+
+                return [
+                    uuid:platillo.uuid,
+                    nombre:platillo.nombre, 
+                    descripcion:platillo.descripcion, 
+                    costo:platillo.costo, 
+                    status:platillo.status,
+                    platillosDisponibles:platillo.platillosDisponibles,
+                    fechaDisponible: platillo.fechaDisponible,
+                    subMenu: mapTipoMenu(subMenu,[])
+                ]
+            }
+            return [
+                resp: [ success: true, data: list ],
                 status: 200
             ]
         }catch(e){
