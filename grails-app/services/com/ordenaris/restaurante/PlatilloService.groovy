@@ -37,7 +37,8 @@ class PlatilloService {
 
     def mapTipoMenu = { tipo, lista ->
         def obj = [
-            name: tipo.nombre,
+            uuid: tipo.uuid,
+            name: tipo.nombre
         ]
         if( lista.size() > 0 ) {
             if (lista[0].containsKey("descripcion")) {
@@ -66,6 +67,103 @@ class PlatilloService {
                 status: 200
             ]
         }catch(e){ 
+            return [
+                resp: [ success: false, mensaje: e.getMessage() ],
+                status: 500
+            ]
+        }
+    }
+
+    def informacionPlatillo( uuid ){
+        def platillo = Platillo.findByUuid(uuid)
+        if(!platillo) {
+            return [
+                resp: [ success:false, mensaje: "El platillo no existe" ],
+                status: 404
+            ]
+        }
+        if(platillo.status == 2){
+            return [
+                resp: [ success:false, mensaje: "El platillo ha sido eliminado" ],
+                status: 404
+            ]
+        }
+        def subMenu = TipoMenu.findById(platillo.tipoMenu.id)
+        // def menu = TipoMenu.findById(submenu.tipoPrincipal.id)
+
+        def respuesta = [
+            uuid:platillo.uuid,
+            nombre:platillo.nombre, 
+            descripcion:platillo.descripcion, 
+            costo:platillo.costo, 
+            status:platillo.status,
+            platillosDisponibles:platillo.platillosDisponibles,
+            fechaDisponible: platillo.fechaDisponible,
+            subMenu: mapTipoMenu(subMenu,[])
+        ]
+        return [
+            resp: [ success:true, data: respuesta ],
+            status: 200
+        ]
+    }
+
+    def editarPlatillo( nombre, menuTipo, fechaDisponible, costo, descripcion, platillosDisponibles, uuid ) {
+        try{
+            // select * from tipo_menu where uuid = UUID
+            def platillo = Platillo.findByUuid(uuid)
+
+            if( !platillo ) {
+                return [
+                    resp: [ success: false, mensaje: "El platillo no existe" ],
+                    status: 500
+                ]
+            }
+
+            def menuNuevo = TipoMenu.findByUuid(menuTipo)
+
+            if( !platillo ) {
+                return [
+                    resp: [ success: false, mensaje: "El menu no existe" ],
+                    status: 500
+                ]
+            }
+
+            platillo.nombre = nombre
+            platillo.tipoMenu = menuNuevo
+            platillo.fechaDisponible = fechaDisponible
+            platillo.costo = costo
+            platillo.descripcion = descripcion
+            platillo.platillosDisponibles = platillosDisponibles
+            platillo.save()
+
+            return [
+                resp: [ success: true ],
+                status: 200
+            ]
+        }catch(e){
+            return [
+                resp: [ success: false, mensaje: e.getMessage() ],
+                status: 500
+            ]
+        } 
+    }
+
+    def editarEstatusPlatillo( estatus, uuid ) {
+        try{
+            def platillo = Platillo.findByUuid( uuid )
+            if( !platillo ) {
+                return [
+                    resp: [success:false, mensaje: "No se encontro el platillo"],
+                    status: 500
+                ]
+            }
+            platillo.status = estatus
+            platillo.save()
+            return [
+                resp: [success:true],
+                status: 200
+            ]
+        }catch(e){
             return [
                 resp: [ success: false, mensaje: e.getMessage() ],
                 status: 500
