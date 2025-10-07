@@ -24,6 +24,25 @@ class UrlMappings {
             }
         }
 
+        group "/platillo", {
+            post "/nuevo"(controller: "platillo", action: "nuevoPlatillo")
+            get "/lista"(controller: "platillo", action: "listaPlatillos")
+            get "/ver"(controller: "platillo", action: "paginarPlatillos")
+            group "/$uuid", {
+                get "/informacion"(controller: "platillo", action: "informacionPlatillo")
+                patch "/editar"(controller: "platillo", action: "editarPlatillo")
+                patch "/activar"(controller: "platillo", action: "editarEstatusPlatillo"){
+                    estatus = 1
+                }
+                patch "/desactivar"(controller: "platillo", action: "editarEstatusPlatillo") {
+                    estatus = 0
+                }
+                delete "/eliminar"(controller: "platillo", action: "editarEstatusPlatillo") {
+                    estatus = 2
+                }
+            }
+        }
+
         "/"(controller: 'application', action:'index')
         "500"(view: '/error')
         "404"(view: '/notFound')

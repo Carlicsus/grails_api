@@ -1,6 +1,7 @@
 package restaurante_carlos
 
 import com.ordenaris.restaurante.TipoMenu
+import com.ordenaris.restaurante.Platillo
 import java.util.regex.*
 class BootStrap {
 
@@ -19,6 +20,8 @@ class BootStrap {
             new TipoMenu([ nombre: "Postres" ]).save(flush:true)
             new TipoMenu([ nombre: "Bebidas" ]).save(flush:true)
         }
+
+        
 
     }
     def destroy = {
